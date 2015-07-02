@@ -12,8 +12,9 @@ public class Sonda {
 
 	private long id;
 
-	public Sonda(Posicao posicao) {
+	public Sonda(Posicao posicao, Direcao direcao) {
 		this.posicao = posicao;
+		this.direcao = direcao;
 	}
 
 	@Getter
