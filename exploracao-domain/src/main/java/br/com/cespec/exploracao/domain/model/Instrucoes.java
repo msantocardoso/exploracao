@@ -1,4 +1,4 @@
-package br.com.cespec.domain.entity;
+package br.com.cespec.exploracao.domain.model;
 
 public enum Instrucoes {
 

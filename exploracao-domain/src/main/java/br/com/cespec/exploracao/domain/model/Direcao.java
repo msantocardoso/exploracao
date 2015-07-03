@@ -1,20 +1,24 @@
-package br.com.cespec.domain.entity;
+package br.com.cespec.exploracao.domain.model;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public enum Direcao {
 
-	N("NORTE", "^", "O", "L"),
-	S("SUL", "v", "O", "L"),
-	L("LESTE", ">", "N", "S"),
-	O("OESTE", "<", "S", "N");
+	N("NORTH", "^", "W", "E"),
+	S("SOUTH", "v", "W", "E"),
+	E("EAST", ">", "N", "S"),
+	W("WEST", "<", "S", "N");
+
+	private Map<String, String> mapaDirecao = new HashMap<>();
+	private String descricao;
+	private String simbolo;
 
 	Direcao(String descricao, String simbolo, String esquerda, String direita) {
 		this.descricao= descricao;
 		this.simbolo  = simbolo;
-		this.mapaDirecao.put(Instrucoes.L.name(), Direcao.getDirecao(esquerda));
-		this.mapaDirecao.put(Instrucoes.R.name(), Direcao.getDirecao(direita));
+		this.mapaDirecao.put(Instrucoes.L.name(), esquerda);
+		this.mapaDirecao.put(Instrucoes.R.name(), direita);
 	}
 
 	public static Direcao getDirecao(String sigla) {
@@ -30,10 +34,6 @@ public enum Direcao {
 		return direcao;
 	}
 
-	private Map<String, Direcao> mapaDirecao = new HashMap<>();
-	private String descricao;
-	private String simbolo;
-
 	public String getSimbolo() {
 		return this.simbolo;
 	}
@@ -43,10 +43,15 @@ public enum Direcao {
 	}
 
 	public Direcao getEsquerda() {
-		return mapaDirecao.get(Instrucoes.L.name());
+		String sigla = mapaDirecao.get(Instrucoes.L.name());
+
+		return Direcao.getDirecao(sigla);
 	}
 
 	public Direcao getDireita() {
-		return mapaDirecao.get(Instrucoes.R.name());
+
+		String sigla = mapaDirecao.get(Instrucoes.R.name());
+
+		return Direcao.getDirecao(sigla);
 	}
 }
