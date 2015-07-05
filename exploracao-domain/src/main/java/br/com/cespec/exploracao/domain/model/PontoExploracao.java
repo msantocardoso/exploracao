@@ -19,6 +19,6 @@ public class PontoExploracao {
 
 	@Override
 	public String toString() {
-		return (sonda == null)  ? "X" : "("+sonda.getId()+") "+sonda.getDirecao().getSimbolo();
+		return (sonda == null)  ? "  X  " : "("+sonda.getId()+") "+sonda.getDirecao().getSimbolo();
 	}
 }

@@ -32,7 +32,7 @@ public class MalhaTest extends AbstracaoSpringTest {
 	public void deveAdicionarSondaAAreaDeExploracao() {
 		Sonda sonda = novaSonda(0,0, Direcao.W);
 
-		sonda.setId(1);
+		sonda.setId(Long.valueOf(1));
 		malha.addSonda(sonda);
 
 		malha.exibirAreaExploracao();
@@ -42,10 +42,10 @@ public class MalhaTest extends AbstracaoSpringTest {
 	public void deveAdicionarSondaAAreaDeExploracaoEIndicarQuePosicaoNaoEstaDisponivel() {
 		Sonda sonda = novaSonda(0,0, Direcao.W);
 
-		sonda.setId(1);
+		sonda.setId(Long.valueOf(1));
 		malha.addSonda(sonda);
 
-		assertEquals(false, malha.pontoDisponivel(sonda.getPosicao()));
+		assertEquals(false, malha.posicaoDisponivel(sonda.getPosicao()));
 	}
 
 	@Test(expected=PosicaoExploracaoInvalidoException.class)
@@ -53,7 +53,7 @@ public class MalhaTest extends AbstracaoSpringTest {
 
 		Sonda sonda = novaSonda(10,6, Direcao.W);
 
-		sonda.setId(1);
+		sonda.setId(Long.valueOf(1));
 		malha.addSonda(sonda);
 	}
 
@@ -61,11 +61,11 @@ public class MalhaTest extends AbstracaoSpringTest {
 	public void deveLancarErroAoTentarAdicionarSondaEmUmaAreaOcupada() {
 
 		Sonda sonda = novaSonda(0,0, Direcao.E);
-		sonda.setId(1);
+		sonda.setId(Long.valueOf(1));
 		malha.addSonda(sonda);
 
 		Sonda sondaI = novaSonda(0,0, Direcao.N);
-		sondaI.setId(2);
+		sondaI.setId(Long.valueOf(2));
 		malha.addSonda(sondaI);
 	}
 

@@ -2,6 +2,7 @@ package br.com.cespec.exploracao.domain.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -28,15 +29,19 @@ public class Malha {
 	int X, Y;
 
 	Map<Integer, List<PontoExploracao>> area;
+	Map<Long, Posicao> sondas;
 
 	@PostConstruct
 	public void init() {
-		area = new HashMap<>();
+		area = new LinkedHashMap<>();
+		sondas = new HashMap<>();
 	}
 
 	public void iniciar(@Min(value=0,message="{coordenada.negativa}") int x, @Min(value=0,message="{coordenada.negativa}") int y) {
 		this.X = x;
 		this.Y = y;
+		this.area = new LinkedHashMap<>();
+		this.sondas = new HashMap<>();
 
 		iterarEixoY(index-> {
 			List<PontoExploracao> areaExploracao = criarAreaExploracao();
@@ -45,7 +50,7 @@ public class Malha {
 		});
 	}
 
-	public boolean pontoDisponivel(@NotNull(message="{sonda.notnull}") @Valid Posicao posicao) {
+	public boolean posicaoDisponivel(@NotNull(message="{sonda.notnull}") @Valid Posicao posicao) {
 
 		validarPosicao(posicao);
 
@@ -60,25 +65,47 @@ public class Malha {
 
 		validarPosicao(posicao);
 
-		if(!pontoDisponivel(posicao)) {
-			String mensagem = String.format("A posição [x: %s,y: %s] na qual deseja adicionar a sonda [%s] está ocupado, favor redefinir uma posição para exploração.", sonda.getPosicao().getX(), sonda.getPosicao().getY(), sonda.getId());
+		if(!posicaoDisponivel(posicao)) {
+			String mensagem = String.format("A posição [x: %s,y: %s] na qual deseja adicionar a sonda [%s] está ocupado, favor definir uma posição para exploração.", sonda.getPosicao().getX(), sonda.getPosicao().getY(), sonda.getId());
 
 			throw new PontoExploracaoOcupadoException(mensagem);
+		}
+
+		if(sondas.containsKey(sonda.getId())) {
+			Posicao posicaoAntiga = sondas.get(sonda.getId());
+
+			liberarPontoExploracao(sonda,posicaoAntiga);
 		}
 
 		posicionarSonda(sonda);
 	}
 
+	private void liberarPontoExploracao(Sonda sonda, Posicao posicaoAntiga) {
+
+		if(posicaoAntiga != null) {
+			PontoExploracao pontoExploracao = getPontoExploracao(posicaoAntiga);
+
+			if(pontoExploracao != null) {
+				Sonda sondaAlocada = pontoExploracao.get();
+
+				if(sonda != null && sonda.equals(sondaAlocada)) {
+					pontoExploracao.setSonda(null);
+				}
+			}
+		}
+	}
+
 	public void removerSonda(@NotNull(message="{sonda.notnull}") @Valid Sonda sonda) {
+
+		if(sondas.containsKey(sonda.getId())) {
+			Posicao posicaoAntiga = sondas.get(sonda.getId());
+
+			liberarPontoExploracao(sonda, posicaoAntiga);
+		}
+
 		Posicao posicao = sonda.getPosicao();
 
-		PontoExploracao pontoExploracao = getPontoExploracao(posicao);
-
-		Sonda sondaAlocada = pontoExploracao.get();
-
-		if(sonda.equals(sondaAlocada)) {
-			pontoExploracao.setSonda(null);
-		}
+		liberarPontoExploracao(sonda, posicao);
 	}
 
 	private void posicionarSonda(Sonda sonda) {
@@ -86,9 +113,13 @@ public class Malha {
 
 		validarPosicao(posicao);
 
-		PontoExploracao pontoExploracao = getPontoExploracao(posicao);
+		if(!haveraColisao(sonda)) {
+			sondas.put(sonda.getId(), new Posicao(posicao.getX(), posicao.getY()));
 
-		pontoExploracao.setSonda(sonda);
+			PontoExploracao pontoExploracao = getPontoExploracao(posicao);
+
+			pontoExploracao.setSonda(sonda);
+		}
 	}
 
 	private PontoExploracao getPontoExploracao(Posicao posicao) {
@@ -117,41 +148,7 @@ public class Malha {
 
 	public void exibirAreaExploracao() {
 
-		String breakLine = System.getProperty("line.separator");
-
-		StringBuilder areaExp = new StringBuilder();
-		areaExp.append(breakLine);
-
-		iterarEixoY(index -> {
-			List<PontoExploracao> areaExploracao = area.get(index);
-
-			if(areaExp.length()>0) {
-				areaExp.append(breakLine);
-			}
-
-			areaExp.append(index +" -> " + areaExploracao);
-		});
-
-		areaExp.append(breakLine);
-		areaExp.append("  ->  ");
-
-		areaExp.append(getRodape());
-		areaExp.append(breakLine);
-
-		log.info(areaExp.toString());
-	}
-
-	private String getRodape() {
-		StringBuilder rodape = new StringBuilder();
-		iterarEixoX(index -> {
-
-			if(rodape.length()>0)
-				rodape.append(", ");
-
-			rodape.append(index);
-		});
-
-		return rodape.toString();
+		log.info(getAreaExploracao());
 	}
 
 	private void iterarEixoY(Consumer<Integer> posicao) {
@@ -176,5 +173,63 @@ public class Malha {
 		});
 
 		return pontos;
+	}
+
+	public boolean haveraColisao(Sonda sonda) {
+
+		boolean colisao = false;
+
+		Posicao posicao = sonda.getPosicao();
+
+		PontoExploracao pontoExploracao = getPontoExploracao(posicao);
+
+		if(!pontoExploracao.disponivel()) {
+			Sonda sondaAlocada = pontoExploracao.get();
+
+			if(!sonda.equals(sondaAlocada)) {
+				colisao = true;
+			}
+		}
+
+		return colisao;
+	}
+
+	public String getAreaExploracao() {
+		String breakLine = System.getProperty("line.separator");
+
+		StringBuilder areaExp = new StringBuilder();
+		areaExp.append(breakLine);
+
+		area.forEach((k,v) -> {
+			if(areaExp.length()>0) {
+				areaExp.append(breakLine);
+			}
+			if(k<=9)
+				areaExp.append(" ");
+			areaExp.append(k +" -> " + v);
+		});
+
+		areaExp.append(breakLine);
+		areaExp.append("   ->  ");
+
+		areaExp.append(getRodape());
+		areaExp.append(breakLine);
+
+		return areaExp.toString();
+	}
+
+	private String getRodape() {
+		StringBuilder rodape = new StringBuilder();
+		iterarEixoX(index -> {
+
+			if(rodape.length()>0)
+				rodape.append(", ");
+
+			rodape.append("  ");
+			rodape.append(index);
+			rodape.append("  ");
+		});
+
+		return rodape.toString();
 	}
 }

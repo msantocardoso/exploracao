@@ -16,7 +16,7 @@ public class ExploracaoRuntimeException extends RuntimeException {
 
 	public ExploracaoRuntimeException(List<String> mensagens) {
 		if(mensagens != null && !mensagens.isEmpty()) {
-			mensagens.forEach(mensagem -> new MensagemErro(mensagem));
+			mensagens.forEach(mensagem -> this.mensagens.add(new MensagemErro(mensagem)));
 		}
 	}
 

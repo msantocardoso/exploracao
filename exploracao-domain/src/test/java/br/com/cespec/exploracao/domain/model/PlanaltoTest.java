@@ -19,9 +19,6 @@ public class PlanaltoTest extends AbstracaoSpringTest {
 	@Autowired
 	Planalto planalto;
 
-	@Autowired
-	Malha malha;
-
 	@Before
 	public void inicializar() {
 		planalto.inicializar(5, 5);
@@ -45,8 +42,8 @@ public class PlanaltoTest extends AbstracaoSpringTest {
 		Sonda sondaI  = sondas.get(0);
 		Sonda sondaII = sondas.get(1);
 
-		assertEquals(1, sondaI.getId());
-		assertEquals(2, sondaII.getId());
+		assertEquals(Long.valueOf(1), sondaI.getId());
+		assertEquals(Long.valueOf(2), sondaII.getId());
 
 		Posicao posicao = sondaI.getPosicao();
 		assertEquals(0, posicao.getX());
@@ -65,7 +62,7 @@ public class PlanaltoTest extends AbstracaoSpringTest {
 
 		Sonda sonda  = planalto.buscarSonda(1);
 
-		assertEquals(1, sonda.getId());
+		assertEquals(Long.valueOf(1), sonda.getId());
 
 		Posicao posicao = sonda.getPosicao();
 		assertEquals(0, posicao.getX());
@@ -79,7 +76,7 @@ public class PlanaltoTest extends AbstracaoSpringTest {
 
 		Sonda sondaII  = planalto.buscarSonda(2);
 
-		assertEquals(2, sondaII.getId());
+		assertEquals(Long.valueOf(2), sondaII.getId());
 
 		Posicao posicao = sondaII.getPosicao();
 		assertEquals(1, posicao.getX());
