@@ -1,5 +1,12 @@
 # exploracao
 
+Para iniciar a aplicação basta executar a classe:
+
+br.com.cespec.exploracao.application.ExploracaoApplication
+
+API do Serviço de Exploração
+----------------------------------------
+
 Exibir Área de Exploração
 GET: http://localhost:8080/exploracao/exibir/area
 
