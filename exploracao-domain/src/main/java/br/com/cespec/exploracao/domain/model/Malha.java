@@ -49,9 +49,7 @@ public class Malha {
 
 		validarPosicao(posicao);
 
-		List<PontoExploracao> pontos = area.get(posicao.getY());
-
-		PontoExploracao pontoExploracao = pontos.get(posicao.getX());
+		PontoExploracao pontoExploracao = getPontoExploracao(posicao);
 
 		return pontoExploracao.disponivel();
 	}
