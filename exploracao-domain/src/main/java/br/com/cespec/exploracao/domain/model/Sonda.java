@@ -22,12 +22,19 @@ public class Sonda {
 	@Getter
 	private Direcao direcao;
 
-	public Sonda(Posicao posicao, Direcao direcao) {
-		this.posicao = posicao;
+	public Sonda(int x, int y, Direcao direcao) {
+		this.posicao = new Posicao(x, y);
 		this.direcao = direcao;
 	}
 
-	public void executar(Instrucoes instrucao) {
+	public void executar(String instrucoes) {
+
+		List<Instrucoes> listInstrucoes = Instrucoes.getInstrucoes(instrucoes);
+
+		executar(listInstrucoes);
+	}
+
+	private void executar(Instrucoes instrucao) {
 		if(instrucao == null) {
 			throw new IllegalArgumentException("Instrução não pode ser nula!");
 		}
@@ -39,7 +46,7 @@ public class Sonda {
 		}
 	}
 
-	public void executar(List<Instrucoes> instrucoes) {
+	private void executar(List<Instrucoes> instrucoes) {
 		if(instrucoes == null) {
 			throw new IllegalArgumentException("As instruções não pode ser nula!");
 		}

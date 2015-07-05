@@ -1,6 +1,7 @@
 package br.com.cespec.exploracao.domain.model;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.util.List;
 
@@ -17,6 +18,9 @@ public class PlanaltoTest extends AbstracaoSpringTest {
 
 	@Autowired
 	Planalto planalto;
+
+	@Autowired
+	Malha malha;
 
 	@Before
 	public void inicializar() {
@@ -86,9 +90,13 @@ public class PlanaltoTest extends AbstracaoSpringTest {
 
 	@Test
 	public void deveAdicionarERemoverSondaPeloId() {
-		Sonda sonda = planalto.adicionarSonda(5, 3, Direcao.S);
+		Sonda sonda = planalto.adicionarSonda(4, 3, Direcao.S);
 
 		planalto.removerSonda(sonda.getId());
+
+		sonda = planalto.buscarSonda(sonda.getId());
+
+		assertNull(sonda);
 	}
 
 	@Test
@@ -96,6 +104,10 @@ public class PlanaltoTest extends AbstracaoSpringTest {
 		Sonda sonda = planalto.adicionarSonda(0, 2, Direcao.W);
 
 		planalto.removerSonda(sonda);
+
+		sonda = planalto.buscarSonda(sonda.getId());
+
+		assertNull(sonda);
 	}
 
 	@Test(expected=ConstraintViolationException.class)
@@ -115,7 +127,7 @@ public class PlanaltoTest extends AbstracaoSpringTest {
 
 	@Test(expected=ConstraintViolationException.class)
 	public void deveLancarConstraintViolationExceptionAoTentarAdicionarSondaComValoresInvalidos() {
-		planalto.adicionarSonda(new Sonda(null, null));
+		planalto.adicionarSonda(new Sonda(-1,-10, null));
 	}
 
 	@Test(expected=ConstraintViolationException.class)

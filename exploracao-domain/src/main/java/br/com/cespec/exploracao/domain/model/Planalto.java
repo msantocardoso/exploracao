@@ -8,10 +8,12 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
@@ -19,24 +21,22 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 public class Planalto {
 
-	private int [][] malha;
-
 	private AtomicLong sequencialSonda;
 
 	private Map<Long, Sonda> sondas;
 
-	public Planalto() {
+	@Autowired
+	private Malha malha;
+
+	@PostConstruct
+	public void init() {
 		inicializar(10, 10);
 	}
 
-	public Planalto(int x, int y) {
-		inicializar(x, y);
-	}
-
 	public void inicializar(@Min(value=0,message="{coordenada.negativa}") int x, @Min(value=0,message="{coordenada.negativa}") int y) {
-		this.malha = new int[y][x];
 		this.sondas = new HashMap<>(0);
 		this.sequencialSonda = new AtomicLong();
+		this.malha.iniciar(x, y);
 	}
 
 	public void adicionarSonda(@NotNull(message="{sonda.notnull}") @Valid Sonda sonda) {
@@ -45,11 +45,13 @@ public class Planalto {
 		sonda.setId(id);
 
 		this.sondas.put(sonda.getId(), sonda);
+
+		this.malha.addSonda(sonda);
 	}
 
 	public Sonda adicionarSonda(@Min(value=0,message="{coordenada.negativa}") int x, @Min(value=0,message="{coordenada.negativa}") int y, @NotNull(message="{direcao.notnull}") Direcao direcao) {
 
-		Sonda sonda = new Sonda(new Posicao(x, y), direcao);
+		Sonda sonda = new Sonda(x, y, direcao);
 
 		adicionarSonda(sonda);
 
@@ -58,7 +60,9 @@ public class Planalto {
 
 	public void removerSonda(@Min(value=1,message="{sonda.id.invalido}") long id) {
 		if(sondas.containsKey(id)) {
-			sondas.remove(id);
+			Sonda sonda = sondas.remove(id);
+
+			this.malha.removerSonda(sonda);
 		}
 	}
 

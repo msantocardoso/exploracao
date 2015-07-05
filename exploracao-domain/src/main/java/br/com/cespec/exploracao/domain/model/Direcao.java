@@ -6,7 +6,7 @@ import java.util.Map;
 public enum Direcao {
 
 	N("NORTH", "^", "W", "E"),
-	S("SOUTH", "v", "W", "E"),
+	S("SOUTH", "v", "E", "W"),
 	E("EAST", ">", "N", "S"),
 	W("WEST", "<", "S", "N");
 
