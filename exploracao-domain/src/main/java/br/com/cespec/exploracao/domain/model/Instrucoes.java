@@ -72,4 +72,23 @@ public enum Instrucoes {
 
 		return instr;
 	}
+
+	public static boolean isInstrucaoMovimentacao(String instrucoes, int indiceInstrucao) {
+		char charInst = instrucoes.charAt(indiceInstrucao);
+
+		boolean equals = M.name().equals(String.valueOf(charInst));
+
+		return equals;
+	}
+
+	public static String destacadarInstrucao(String instrucoes, int indiceInstrucao) {
+
+		char instrucao = instrucoes.charAt(indiceInstrucao);
+
+		StringBuilder inst = new StringBuilder(instrucoes);
+		inst.deleteCharAt(indiceInstrucao);
+		inst.insert(indiceInstrucao, "["+instrucao+"]");
+
+		return inst.toString();
+	}
 }

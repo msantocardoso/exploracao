@@ -8,8 +8,17 @@ br.com.cespec.exploracao.application.ExploracaoApplication
 
 API do Serviço de Exploração
 ----------------------------------------
+http://localhost:8080/exploracao/iniciar/area
 
-> * Exibir Área de Exploração
+> * Serviço de inicialização da área de exploração.
+	- POST: http://localhost:8080/exploracao/iniciar/area
+```
+{
+"x": 5,
+"y": 5
+}
+```
+> * Exibir Área de Exploraçãoa
 	- GET: http://localhost:8080/exploracao/exibir/area
 
 > * Consultar Sonda Por ID

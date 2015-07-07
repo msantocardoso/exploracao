@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -38,6 +39,27 @@ public class GlobalExceptionHandler  {
 
 			erros.add(new MensagemErro(erro));
 		}
+
+        return erros;
+    }
+
+
+	@ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    List<MensagemErro> handleException(HttpMessageNotReadableException ex) {
+
+    	List<MensagemErro> erros = new ArrayList<>();
+
+        Throwable mostSpecificCause = ex.getMostSpecificCause();
+        MensagemErro errorMessage = null;
+        if (mostSpecificCause != null) {
+            String message = mostSpecificCause.getMessage();
+            errorMessage = new MensagemErro(message);
+        } else {
+            errorMessage = new MensagemErro(ex.getMessage());
+        }
+        erros.add(errorMessage);
 
         return erros;
     }

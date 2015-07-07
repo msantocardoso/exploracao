@@ -1,15 +1,8 @@
 package br.com.cespec.exploracao.domain.model;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -19,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
+import br.com.cespec.exploracao.domain.repository.SondaRepository;
 import br.com.cespec.exploracao.domain.transfer.InstrucaoDTO;
 import br.com.cespec.exploracao.infra.exception.ColisaoException;
 import br.com.cespec.exploracao.infra.exception.ExploracaoRuntimeException;
@@ -26,34 +20,29 @@ import br.com.cespec.exploracao.infra.exception.MensagemErro;
 import br.com.cespec.exploracao.infra.exception.PontoExploracaoOcupadoException;
 import br.com.cespec.exploracao.infra.exception.PosicaoExploracaoInvalidoException;
 
-
-
-
-
-
 @Component
 @Validated
 public class Planalto {
 
-	private AtomicLong sequencialSonda;
-
-	private Map<Long, Sonda> sondas;
+	@Autowired
+	private SondaRepository sondaRepository;
 
 	@Autowired
 	private Malha malha;
 
-	@PostConstruct
-	public void init() {
-		inicializar(10, 10);
-	}
-
 	public void inicializar(@Min(value=0,message="{coordenada.negativa}") int x, @Min(value=0,message="{coordenada.negativa}") int y) {
-		this.sondas = new HashMap<>(0);
-		this.sequencialSonda = new AtomicLong();
 		this.malha.iniciar(x, y);
 	}
 
+	private void validarAreaExploracao() {
+		if(!this.malha.areaDeExploracaoIniciada()) {
+			throw new ExploracaoRuntimeException("Favor iniciar a area de exploracacao!");
+		}
+	}
+
 	public void adicionarSonda(@NotNull(message="{sonda.notnull}") @Valid Sonda sonda) {
+
+		validarAreaExploracao();
 
 		if(!this.malha.posicaoDisponivel(sonda.getPosicao())) {
 			String mensagem = String.format("A posição [x: %s,y: %s] na qual deseja adicionar a sonda está ocupado, favor definir uma posição para exploração.", sonda.getPosicao().getX(), sonda.getPosicao().getY());
@@ -61,31 +50,36 @@ public class Planalto {
 			throw new PontoExploracaoOcupadoException(mensagem);
 		}
 
-		long id = sequencialSonda.incrementAndGet();
-		sonda.setId(id);
-
-		this.sondas.put(sonda.getId(), sonda);
+		this.sondaRepository.adicionarSonda(sonda);
 
 		this.malha.addSonda(sonda);
 	}
 
 	public Sonda adicionarSonda(@Min(value=0,message="{coordenada.negativa}") int x, @Min(value=0,message="{coordenada.negativa}") int y, @NotNull(message="{direcao.notnull}") Direcao direcao) {
 
-		Sonda sonda = novaSonda(x, y, direcao);
+		validarAreaExploracao();
+
+		Sonda sonda = Sonda.novaSonda(x, y, direcao);
 
 		adicionarSonda(sonda);
 
 		return sonda;
 	}
 
-	private Sonda novaSonda(int x, int y, Direcao direcao) {
-		return new Sonda(x, y, direcao);
-	}
-
 	public void removerSonda(@Min(value=1,message="{sonda.id.invalido}") long id) {
-		if(sondas.containsKey(id)) {
-			Sonda sonda = sondas.remove(id);
+		validarAreaExploracao();
 
+		Sonda sonda = sondaRepository.buscarSonda(id);
+
+		if(sonda == null) {
+			String mensagem = String.format("Nenhuma sonda encontrada com id: [%s]!", id);
+
+			throw new ExploracaoRuntimeException(mensagem);
+		}
+
+		sondaRepository.removerSonda(id);
+
+		if(sonda != null) {
 			this.malha.removerSonda(sonda);
 		}
 	}
@@ -94,20 +88,16 @@ public class Planalto {
 		removerSonda(sonda.getId());
 	}
 
-	public Sonda buscarSonda(@Min(value=1,message="{sonda.id.invalido}") long id) {
-		return this.sondas.get(id);
+	public String getAreaExploracao() {
+		validarAreaExploracao();
+
+		return malha.getAreaExploracao();
 	}
 
-	public List<Sonda> getSondas() {
+	public Sonda executarInstrucoes(@Min(value=1,message="{sonda.id.invalido}") Long id, @NotEmpty String instrucoes) {
+		validarAreaExploracao();
 
-		Collection<Sonda> sondas = this.sondas.values();
-
-		return Collections.unmodifiableList(sondas.stream().collect(Collectors.toList()));
-	}
-
-	public Sonda executarInstrucoes(@Min(value=1,message="{sonda.id.invalido}") long id, @NotEmpty String instrucoes) {
-
-		Sonda sonda = buscarSonda(id);
+		Sonda sonda = sondaRepository.buscarSonda(id);
 
 		if(sonda == null) {
 			String mensagem = String.format("Nenhuma sonda encontrada com id: [%s]!", id);
@@ -129,17 +119,23 @@ public class Planalto {
 	private void simularExecucaoInstrucoes(Sonda sonda, String instrucoes) {
 		Posicao posicao = sonda.getPosicao();
 
-		Sonda novaSonda = novaSonda(posicao.getX(), posicao.getY(), sonda.getDirecao());
+		Sonda novaSonda = Sonda.novaSonda(posicao.getX(), posicao.getY(), sonda.getDirecao());
 
 		novaSonda.setId(sonda.getId());
 
 		List<String> erros = new ArrayList<>(0);
 
-		novaSonda.executar(instrucoes, (instrucao, novoEstado) -> {
+		novaSonda.executar(instrucoes, (indiceInstrucao, novoEstado) -> {
 
+			String instrucao = Instrucoes.destacadarInstrucao(instrucoes, indiceInstrucao);
 			try {
-				if(malha.haveraColisao(novoEstado)) {
-					String mensagem = String.format("Haverá colisão da Sonda [%s] na posição: [x: %s,y: %s] da área de exploração ao executar a instrução: %s", novoEstado.getId(), novoEstado.getPosicao().getX(), novoEstado.getPosicao().getY(), instrucao);
+				if(Instrucoes.isInstrucaoMovimentacao(instrucoes, indiceInstrucao) && malha.haveraColisao(novoEstado)) {
+
+					Sonda sondaColisao = malha.getSonda(novoEstado.getPosicao());
+
+					String colisao = (sondaColisao == null) ? "" : String.format("com a sonda [%s]", sondaColisao.getId());
+
+					String mensagem = String.format("Haverá colisão da Sonda [%s] %s na posição: [x: %s,y: %s] da área de exploração ao executar a instrução: %s", novoEstado.getId(), colisao, novoEstado.getPosicao().getX(), novoEstado.getPosicao().getY(), instrucao);
 
 					erros.add(mensagem);
 				}
@@ -155,11 +151,9 @@ public class Planalto {
 		}
 	}
 
-	public String getAreaExploracao() {
-		return malha.getAreaExploracao();
-	}
-
 	public List<Sonda> executarInstrucoes(List<InstrucaoDTO> instrucoes) {
+
+		validarAreaExploracao();
 
 		List<Sonda> sondas = new ArrayList<>(instrucoes.size());
 
@@ -174,6 +168,10 @@ public class Planalto {
 				List<MensagemErro> errors = exc.getErros();
 
 				errors.forEach(err -> erros.add(err.getMensagem()));
+			} catch(ExploracaoRuntimeException ec) {
+				List<MensagemErro> errors = ec.getErros();
+
+				errors.forEach(err -> erros.add(err.getMensagem()));
 			}
 		});
 
@@ -182,5 +180,10 @@ public class Planalto {
 		}
 
 		return sondas;
+	}
+
+	public void limparAreaExploracao() {
+		this.malha.limparAreaExploracao();
+		this.sondaRepository.removerTodasAsSondas();
 	}
 }

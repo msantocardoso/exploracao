@@ -20,9 +20,11 @@ import org.springframework.web.bind.annotation.RestController;
 import br.com.cespec.exploracao.domain.model.Direcao;
 import br.com.cespec.exploracao.domain.model.Planalto;
 import br.com.cespec.exploracao.domain.model.Sonda;
+import br.com.cespec.exploracao.domain.repository.SondaRepository;
 import br.com.cespec.exploracao.domain.transfer.InstrucaoDTO;
 import br.com.cespec.exploracao.domain.transfer.PosicaoDTO;
 import br.com.cespec.exploracao.domain.transfer.SondaDTO;
+import br.com.cespec.exploracao.infra.exception.ExploracaoRuntimeException;
 
 @RestController
 @RequestMapping(value="/exploracao")
@@ -31,14 +33,28 @@ public class SondaRest {
 	@Autowired
 	Planalto planalto;
 
+	@Autowired
+	SondaRepository sondaRepository;
+
 	@ResponseBody
 	@ResponseStatus(HttpStatus.OK)
 	@RequestMapping(value="/exibir/area", produces="text/plain", method=RequestMethod.GET)
 	public String exibirAreaExploracao() {
-
-		String area = planalto.getAreaExploracao();
+		String area = "";
+		try {
+			area = planalto.getAreaExploracao();
+		} catch (ExploracaoRuntimeException e) {
+			area = e.getMessage();
+		}
 
 		return area;
+	}
+
+	@ResponseBody
+	@ResponseStatus(HttpStatus.CREATED)
+	@RequestMapping(value="/iniciar/area", produces="application/json", method=RequestMethod.POST)
+	public void iniciarAreaExploracao(@Valid @RequestBody PosicaoDTO posicao) {
+		planalto.inicializar(posicao.getX(), posicao.getY());
 	}
 
 	@ResponseBody
@@ -46,7 +62,7 @@ public class SondaRest {
 	@RequestMapping(value="/sondas", produces="application/json", method=RequestMethod.GET)
 	public List<SondaDTO> consultarSondas() {
 
-		List<Sonda> sondas = planalto.getSondas();
+		List<Sonda> sondas = sondaRepository.buscarTodas();
 
 		List<SondaDTO> listSondas = new ArrayList<>(sondas.size());
 
@@ -62,7 +78,7 @@ public class SondaRest {
 	@RequestMapping(value="/sondas/{id}", produces="application/json", method=RequestMethod.GET)
 	public SondaDTO consultarSonda(@PathVariable("id") @NotNull Long id) {
 
-		Sonda sonda = planalto.buscarSonda(id);
+		Sonda sonda = sondaRepository.buscarSonda(id);
 
 		SondaDTO sondaTransfer = null;
 

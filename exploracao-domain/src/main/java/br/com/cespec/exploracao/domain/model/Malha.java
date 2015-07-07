@@ -1,22 +1,22 @@
 package br.com.cespec.exploracao.domain.model;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import javax.annotation.PostConstruct;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
+import br.com.cespec.exploracao.domain.repository.SondaRepository;
 import br.com.cespec.exploracao.infra.exception.PontoExploracaoOcupadoException;
 import br.com.cespec.exploracao.infra.exception.PosicaoExploracaoInvalidoException;
 
@@ -28,26 +28,40 @@ public class Malha {
 
 	int X, Y;
 
-	Map<Integer, List<PontoExploracao>> area;
-	Map<Long, Posicao> sondas;
+	private Map<Integer, List<PontoExploracao>> area;
 
-	@PostConstruct
-	public void init() {
-		area = new LinkedHashMap<>();
-		sondas = new HashMap<>();
+	@Autowired
+	private SondaRepository sondaRepository;
+
+	public boolean areaDeExploracaoIniciada()  {
+		return area != null;
 	}
 
 	public void iniciar(@Min(value=0,message="{coordenada.negativa}") int x, @Min(value=0,message="{coordenada.negativa}") int y) {
 		this.X = x;
 		this.Y = y;
 		this.area = new LinkedHashMap<>();
-		this.sondas = new HashMap<>();
 
+		criarAreaExploracao();
+	}
+
+	private void criarAreaExploracao() {
 		iterarEixoY(index-> {
-			List<PontoExploracao> areaExploracao = criarAreaExploracao();
+			List<PontoExploracao> areaExploracao = criarPontosExploracao();
 
 			area.put(Integer.valueOf(index), areaExploracao);
 		});
+	}
+
+	private List<PontoExploracao> criarPontosExploracao() {
+
+		List<PontoExploracao> pontos = new ArrayList<>(X);
+
+		iterarEixoX(index-> {
+			pontos.add(new PontoExploracao());
+		});
+
+		return pontos;
 	}
 
 	public boolean posicaoDisponivel(@NotNull(message="{sonda.notnull}") @Valid Posicao posicao) {
@@ -71,24 +85,31 @@ public class Malha {
 			throw new PontoExploracaoOcupadoException(mensagem);
 		}
 
-		if(sondas.containsKey(sonda.getId())) {
-			Posicao posicaoAntiga = sondas.get(sonda.getId());
-
-			liberarPontoExploracao(sonda,posicaoAntiga);
-		}
+		liberarUltimaPosicao(sonda);
 
 		posicionarSonda(sonda);
 	}
 
-	private void liberarPontoExploracao(Sonda sonda, Posicao posicaoAntiga) {
+	private void liberarUltimaPosicao(Sonda sonda) {
 
-		if(posicaoAntiga != null) {
-			PontoExploracao pontoExploracao = getPontoExploracao(posicaoAntiga);
+		if(sonda.getId() != null) {
+			Posicao posicaoAntiga = sondaRepository.buscarUltimaPosicao(sonda.getId());
+
+			liberarPontoExploracao(sonda.getId(), posicaoAntiga);
+		}
+	}
+
+	private void liberarPontoExploracao(Long idSonda, Posicao posicao) {
+
+		if(idSonda != null && posicao != null) {
+			validarPosicao(posicao);
+
+			PontoExploracao pontoExploracao = getPontoExploracao(posicao);
 
 			if(pontoExploracao != null) {
 				Sonda sondaAlocada = pontoExploracao.get();
 
-				if(sonda != null && sonda.equals(sondaAlocada)) {
+				if(sondaAlocada != null && idSonda.equals(sondaAlocada.getId())) {
 					pontoExploracao.setSonda(null);
 				}
 			}
@@ -97,24 +118,18 @@ public class Malha {
 
 	public void removerSonda(@NotNull(message="{sonda.notnull}") @Valid Sonda sonda) {
 
-		if(sondas.containsKey(sonda.getId())) {
-			Posicao posicaoAntiga = sondas.get(sonda.getId());
-
-			liberarPontoExploracao(sonda, posicaoAntiga);
-		}
+		liberarUltimaPosicao(sonda);
 
 		Posicao posicao = sonda.getPosicao();
 
-		liberarPontoExploracao(sonda, posicao);
+		liberarPontoExploracao(sonda.getId(), posicao);
 	}
 
 	private void posicionarSonda(Sonda sonda) {
 		Posicao posicao = sonda.getPosicao();
 
-		validarPosicao(posicao);
-
 		if(!haveraColisao(sonda)) {
-			sondas.put(sonda.getId(), new Posicao(posicao.getX(), posicao.getY()));
+			sondaRepository.registrarPosicaoSonda(sonda);
 
 			PontoExploracao pontoExploracao = getPontoExploracao(posicao);
 
@@ -123,6 +138,7 @@ public class Malha {
 	}
 
 	private PontoExploracao getPontoExploracao(Posicao posicao) {
+		validarPosicao(posicao);
 
 		List<PontoExploracao> pontos = area.get(posicao.getY());
 
@@ -133,11 +149,11 @@ public class Malha {
 
 	private void validarPosicao(Posicao posicao) {
 		List<String> mensagens = new ArrayList<>(0);
-		if(!area.containsKey(posicao.getY())) {
+		if(posicao.getY() < 0 || !area.containsKey(posicao.getY())) {
 			mensagens.add("Posição Y informada é inválida!");
 		}
 
-		if(posicao.getX() > X) {
+		if(posicao.getX() < 0 || posicao.getX() > X) {
 			mensagens.add("Posição X informada é inválida!");
 		}
 
@@ -164,16 +180,6 @@ public class Malha {
 		}
 	}
 
-	private List<PontoExploracao> criarAreaExploracao() {
-
-		List<PontoExploracao> pontos = new ArrayList<>(X);
-
-		iterarEixoY(index-> {
-			pontos.add(new PontoExploracao());
-		});
-
-		return pontos;
-	}
 
 	public boolean haveraColisao(Sonda sonda) {
 
@@ -231,5 +237,15 @@ public class Malha {
 		});
 
 		return rodape.toString();
+	}
+
+	public Sonda getSonda(Posicao posicao) {
+		PontoExploracao pontoExploracao = getPontoExploracao(posicao);
+
+		return pontoExploracao.get();
+	}
+
+	public void limparAreaExploracao() {
+		criarAreaExploracao();
 	}
 }

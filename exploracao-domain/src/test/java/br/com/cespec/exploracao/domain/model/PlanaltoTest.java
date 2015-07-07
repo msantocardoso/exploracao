@@ -1,8 +1,8 @@
 package br.com.cespec.exploracao.domain.model;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.validation.ConstraintViolationException;
@@ -13,6 +13,9 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import br.com.cespec.exploracao.domain.AbstracaoSpringTest;
+import br.com.cespec.exploracao.domain.transfer.InstrucaoDTO;
+import br.com.cespec.exploracao.infra.exception.ColisaoException;
+import br.com.cespec.exploracao.infra.exception.MensagemErro;
 
 public class PlanaltoTest extends AbstracaoSpringTest {
 
@@ -22,99 +25,68 @@ public class PlanaltoTest extends AbstracaoSpringTest {
 	@Before
 	public void inicializar() {
 		planalto.inicializar(5, 5);
-
-		planalto.adicionarSonda(0, 0, Direcao.E);
-		planalto.adicionarSonda(1, 5, Direcao.N);
 	}
 
 	@After
 	public void finalizar() {
-		planalto = null;
+		planalto.limparAreaExploracao();
 	}
 
 	@Test
-	public void deveValidarConfiguracaoDasSondasCriadas() {
+	public void deveLancarDuasMensagensDeErroDuranteAExecucaoDasInstrucoes() {
+		planalto.adicionarSonda(1, 2, Direcao.N);
+		planalto.adicionarSonda(1, 3, Direcao.N);
 
-		List<Sonda> sondas = planalto.getSondas();
+		try {
+			planalto.executarInstrucoes(Long.valueOf(1), "LMLMLMLMM");
+		} catch (ColisaoException e) {
+			List<MensagemErro> erros = e.getErros();
 
-		assertEquals(2, sondas.size());
-
-		Sonda sondaI  = sondas.get(0);
-		Sonda sondaII = sondas.get(1);
-
-		assertEquals(Long.valueOf(1), sondaI.getId());
-		assertEquals(Long.valueOf(2), sondaII.getId());
-
-		Posicao posicao = sondaI.getPosicao();
-		assertEquals(0, posicao.getX());
-		assertEquals(0, posicao.getY());
-
-		posicao = sondaII.getPosicao();
-		assertEquals(1, posicao.getX());
-		assertEquals(5, posicao.getY());
-
-		assertEquals(Direcao.E, sondaI.getDirecao());
-		assertEquals(Direcao.N, sondaII.getDirecao());
+			assertEquals(1, erros.size());
+		}
 	}
 
 	@Test
-	public void deveRecuperarSondaIPeloIdentificadorEValidarConfiguracoes() {
+	public void deveLancarDuasMensagensDeErroDuranteAExecucaoDasInstrucoesAsSondas() {
+		planalto.adicionarSonda(1, 2, Direcao.N);
+		planalto.adicionarSonda(3, 3, Direcao.E);
+		planalto.adicionarSonda(1, 3, Direcao.N);
+		planalto.adicionarSonda(5, 1, Direcao.E);
 
-		Sonda sonda  = planalto.buscarSonda(1);
+		List<InstrucaoDTO> instrucoes = new ArrayList<>(2);
 
-		assertEquals(Long.valueOf(1), sonda.getId());
+		instrucoes.add(new InstrucaoDTO(Long.valueOf(1),"LMLMLMLMM"));
+		instrucoes.add(new InstrucaoDTO(Long.valueOf(2),"MMRMMRMRRM"));
+		try {
+			planalto.executarInstrucoes(instrucoes);
+		} catch (ColisaoException e) {
+			List<MensagemErro> erros = e.getErros();
 
-		Posicao posicao = sonda.getPosicao();
-		assertEquals(0, posicao.getX());
-		assertEquals(0, posicao.getY());
-
-		assertEquals(Direcao.E, sonda.getDirecao());
+			assertEquals(3, erros.size());
+		}
 	}
 
-	@Test
-	public void deveRecuperarSondaIIPeloIdentificadorEValidarConfiguracoes() {
+	@Test(expected = ColisaoException.class)
+	public void deveLancarColisaoExceptionSeDuranteAExecucaoDasInstrucoesASondaInvadirAreaDeExplocaoUsadaPorOutraSonda() {
+		planalto.adicionarSonda(1, 2, Direcao.N);
+		planalto.adicionarSonda(1, 3, Direcao.N);
 
-		Sonda sondaII  = planalto.buscarSonda(2);
-
-		assertEquals(Long.valueOf(2), sondaII.getId());
-
-		Posicao posicao = sondaII.getPosicao();
-		assertEquals(1, posicao.getX());
-		assertEquals(5, posicao.getY());
-
-		assertEquals(Direcao.N, sondaII.getDirecao());
+		planalto.executarInstrucoes(Long.valueOf(1), "LMLMLMLMM");
 	}
 
-	@Test
-	public void deveAdicionarERemoverSondaPeloId() {
-		Sonda sonda = planalto.adicionarSonda(4, 3, Direcao.S);
+	@Test(expected = ColisaoException.class)
+	public void deveLancarColisaoExceptionSeDuranteAExecucaoDasInstrucoesAsSondasInvadiremAreaDeExplocaoUsadaPorOutrasSondas() {
+		planalto.adicionarSonda(1, 2, Direcao.N);
+		planalto.adicionarSonda(3, 3, Direcao.E);
+		planalto.adicionarSonda(1, 3, Direcao.N);
+		planalto.adicionarSonda(5, 1, Direcao.E);
 
-		planalto.removerSonda(sonda.getId());
+		List<InstrucaoDTO> instrucoes = new ArrayList<>(2);
 
-		sonda = planalto.buscarSonda(sonda.getId());
+		instrucoes.add(new InstrucaoDTO(Long.valueOf(1),"LMLMLMLMM"));
+		instrucoes.add(new InstrucaoDTO(Long.valueOf(2),"MMRMMRMRRM"));
 
-		assertNull(sonda);
-	}
-
-	@Test
-	public void deveAdicionarERemoverSondaPassandoObjeto() {
-		Sonda sonda = planalto.adicionarSonda(0, 2, Direcao.W);
-
-		planalto.removerSonda(sonda);
-
-		sonda = planalto.buscarSonda(sonda.getId());
-
-		assertNull(sonda);
-	}
-
-	@Test(expected=ConstraintViolationException.class)
-	public void deveLancarConstraintViolationExceptionAoTentarRecuperarSondaPassandoIdNegativo() {
-		planalto.buscarSonda(-1);
-	}
-
-	@Test(expected=ConstraintViolationException.class)
-	public void deveLancarConstraintViolationExceptionAoTentarRecuperarSondaPassandoIdInvalido() {
-		planalto.buscarSonda(0);
+		planalto.executarInstrucoes(instrucoes);
 	}
 
 	@Test(expected=ConstraintViolationException.class)
@@ -134,32 +106,16 @@ public class PlanaltoTest extends AbstracaoSpringTest {
 
 	@Test(expected=ConstraintViolationException.class)
 	public void deveLancarConstraintViolationExceptionAoTentarRemoverSondaPassandoIdNegativo() {
-		planalto.removerSonda(-1);
+		planalto.removerSonda(Long.valueOf(-1));
 	}
 
 	@Test(expected=ConstraintViolationException.class)
 	public void deveLancarConstraintViolationExceptionAoTentarRemoverSondaPassandoIdInvalido() {
-		planalto.removerSonda(0);
+		planalto.removerSonda(Long.valueOf(-10));
 	}
 
 	@Test(expected=ConstraintViolationException.class)
 	public void deveLancarConstraintViolationExceptionAoTentarRemoverSondaPassandoObjetoNulo() {
 		planalto.removerSonda(null);
-	}
-
-	@Test(expected=UnsupportedOperationException.class)
-	public void deveLancarUnsupportedOperationExceptionAoTentarLimparAListaDeSondas() {
-
-		List<Sonda> sondas = planalto.getSondas();
-
-		sondas.clear();
-	}
-
-	@Test(expected=UnsupportedOperationException.class)
-	public void deveLancarUnsupportedOperationExceptionAoTentarAdicionarNovaSondasAtravesDaListaDeSondas() {
-
-		List<Sonda> sondas = planalto.getSondas();
-
-		sondas.add(null);
 	}
 }

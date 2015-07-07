@@ -28,7 +28,11 @@ public class Sonda {
 		this.direcao = direcao;
 	}
 
-	public void executar(String instrucoes, BiConsumer<String,  Sonda> transicao) {
+	public static Sonda novaSonda(int x, int y, Direcao direcao) {
+		return new Sonda(x, y, direcao);
+	}
+
+	public void executar(String instrucoes, BiConsumer<Integer,  Sonda> transicao) {
 		List<Instrucoes> listInstrucoes = Instrucoes.getInstrucoes(instrucoes);
 
 		executar(listInstrucoes, transicao);
@@ -63,18 +67,17 @@ public class Sonda {
 		});
 	}
 
-	private void executar(List<Instrucoes> instrucoes, BiConsumer<String,Sonda> transicao) {
+	private void executar(List<Instrucoes> instrucoes, BiConsumer<Integer,Sonda> transicao) {
 		if(instrucoes == null) {
 			throw new IllegalArgumentException("As instruções não pode ser nula!");
 		}
 
-		int index = 0;
+		int indice = 0;
 		for(Instrucoes instrucao : instrucoes) {
-			index++;
 			executar(instrucao);
 
 			if(transicao != null) {
-				transicao.accept("["+index+"]: "+instrucao.name(), this);
+				transicao.accept(indice++, this);
 			}
 		}
 	}
