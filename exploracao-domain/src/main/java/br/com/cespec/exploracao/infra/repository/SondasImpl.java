@@ -15,10 +15,10 @@ import org.springframework.stereotype.Repository;
 import br.com.cespec.exploracao.domain.model.Direcao;
 import br.com.cespec.exploracao.domain.model.Posicao;
 import br.com.cespec.exploracao.domain.model.Sonda;
-import br.com.cespec.exploracao.domain.repository.SondaRepository;
+import br.com.cespec.exploracao.domain.repository.Sondas;
 
 @Repository
-public class SondaRepositoryImpl implements SondaRepository {
+public class SondasImpl implements Sondas {
 
 	private Map<Long, Sonda> sondas;
 
@@ -34,7 +34,7 @@ public class SondaRepositoryImpl implements SondaRepository {
 	}
 
 	@Override
-	public void adicionarSonda(Sonda sonda) {
+	public void adicionar(Sonda sonda) {
 		Long id = sequencialSonda.incrementAndGet();
 		sonda.setId(id);
 
@@ -42,16 +42,16 @@ public class SondaRepositoryImpl implements SondaRepository {
 	}
 
 	@Override
-	public Sonda adicionarSonda(int x, int y, Direcao direcao) {
+	public Sonda adicionar(int x, int y, Direcao direcao) {
 		Sonda novaSonda = Sonda.novaSonda(x, y, direcao);
 
-		adicionarSonda(novaSonda);
+		adicionar(novaSonda);
 
 		return novaSonda;
 	}
 
 	@Override
-	public Sonda removerSonda(Long id) {
+	public Sonda remover(Long id) {
 		Sonda sonda = null;
 		if(sondas.containsKey(id)) {
 			sonda = sondas.remove(id);
@@ -61,12 +61,12 @@ public class SondaRepositoryImpl implements SondaRepository {
 	}
 
 	@Override
-	public void removerSonda(Sonda sonda) {
-		removerSonda(sonda.getId());
+	public void remover(Sonda sonda) {
+		remover(sonda.getId());
 	}
 
 	@Override
-	public Sonda buscarSonda(Long id) {
+	public Sonda buscar(Long id) {
 		Sonda sonda = null;
 
 		if(this.sondas.containsKey(id)) {

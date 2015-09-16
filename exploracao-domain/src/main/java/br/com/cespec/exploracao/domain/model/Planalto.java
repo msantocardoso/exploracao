@@ -12,7 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
-import br.com.cespec.exploracao.domain.repository.SondaRepository;
+import br.com.cespec.exploracao.domain.RegrasMovimentacao;
+import br.com.cespec.exploracao.domain.RegrasRotacao;
+import br.com.cespec.exploracao.domain.repository.Sondas;
 import br.com.cespec.exploracao.domain.transfer.InstrucaoDTO;
 import br.com.cespec.exploracao.infra.exception.ColisaoException;
 import br.com.cespec.exploracao.infra.exception.ExploracaoRuntimeException;
@@ -25,10 +27,16 @@ import br.com.cespec.exploracao.infra.exception.PosicaoExploracaoInvalidoExcepti
 public class Planalto {
 
 	@Autowired
-	private SondaRepository sondaRepository;
+	private Sondas sondaRepository;
 
 	@Autowired
 	private Malha malha;
+
+	@Autowired
+	private RegrasMovimentacao regrasMovimentacao;
+
+	@Autowired
+	private RegrasRotacao regrasRotacao;
 
 	public void inicializar(@Min(value=0,message="{coordenada.negativa}") int x, @Min(value=0,message="{coordenada.negativa}") int y) {
 		this.malha.iniciar(x, y);
@@ -50,7 +58,7 @@ public class Planalto {
 			throw new PontoExploracaoOcupadoException(mensagem);
 		}
 
-		this.sondaRepository.adicionarSonda(sonda);
+		this.sondaRepository.adicionar(sonda);
 
 		this.malha.addSonda(sonda);
 	}
@@ -69,7 +77,7 @@ public class Planalto {
 	public void removerSonda(@Min(value=1,message="{sonda.id.invalido}") long id) {
 		validarAreaExploracao();
 
-		Sonda sonda = sondaRepository.buscarSonda(id);
+		Sonda sonda = sondaRepository.buscar(id);
 
 		if(sonda == null) {
 			String mensagem = String.format("Nenhuma sonda encontrada com id: [%s]!", id);
@@ -77,7 +85,7 @@ public class Planalto {
 			throw new ExploracaoRuntimeException(mensagem);
 		}
 
-		sondaRepository.removerSonda(id);
+		sondaRepository.remover(id);
 
 		if(sonda != null) {
 			this.malha.removerSonda(sonda);
@@ -97,7 +105,7 @@ public class Planalto {
 	public Sonda executarInstrucoes(@Min(value=1,message="{sonda.id.invalido}") Long id, @NotEmpty String instrucoes) {
 		validarAreaExploracao();
 
-		Sonda sonda = sondaRepository.buscarSonda(id);
+		Sonda sonda = sondaRepository.buscar(id);
 
 		if(sonda == null) {
 			String mensagem = String.format("Nenhuma sonda encontrada com id: [%s]!", id);
@@ -105,9 +113,9 @@ public class Planalto {
 			throw new ExploracaoRuntimeException(mensagem);
 		}
 
-		simularExecucaoInstrucoes(sonda, instrucoes);
+		HistoricoExecucao histExecucao = sonda.executar(instrucoes, regrasMovimentacao, regrasRotacao);
 
-		sonda.executar(instrucoes);
+		validarExecucao(instrucoes, histExecucao);
 
 		malha.addSonda(sonda);
 
@@ -116,35 +124,34 @@ public class Planalto {
 		return sonda;
 	}
 
-	private void simularExecucaoInstrucoes(Sonda sonda, String instrucoes) {
-		Posicao posicao = sonda.getPosicao();
-
-		Sonda novaSonda = Sonda.novaSonda(posicao.getX(), posicao.getY(), sonda.getDirecao());
-
-		novaSonda.setId(sonda.getId());
+	private void validarExecucao(String instrucoes, HistoricoExecucao historicoExecucao) {
 
 		List<String> erros = new ArrayList<>(0);
 
-		novaSonda.executar(instrucoes, (indiceInstrucao, novoEstado) -> {
+		List<Sonda> histMovimentacao = historicoExecucao.getHistMovimentacao();
 
-			String instrucao = Instrucoes.destacadarInstrucao(instrucoes, indiceInstrucao);
+		int indiceInstrucao = 0;
+		for (Sonda sonda : histMovimentacao) {
+
+			String instrucao = Instrucoes.destacarInstrucao(instrucoes, indiceInstrucao);
 			try {
-				if(Instrucoes.isInstrucaoMovimentacao(instrucoes, indiceInstrucao) && malha.haveraColisao(novoEstado)) {
+				if(Instrucoes.isInstrucaoMovimentacao(instrucoes, indiceInstrucao) && malha.haveraColisao(sonda)) {
 
-					Sonda sondaColisao = malha.getSonda(novoEstado.getPosicao());
+					Sonda sondaColisao = malha.getSonda(sonda.getPosicao());
 
 					String colisao = (sondaColisao == null) ? "" : String.format("com a sonda [%s]", sondaColisao.getId());
 
-					String mensagem = String.format("Haverá colisão da Sonda [%s] %s na posição: [x: %s,y: %s] da área de exploração ao executar a instrução: %s", novoEstado.getId(), colisao, novoEstado.getPosicao().getX(), novoEstado.getPosicao().getY(), instrucao);
+					String mensagem = String.format("Haverá colisão da Sonda [%s] %s na posição: [x: %s,y: %s] da área de exploração ao executar a instrução: %s", sonda.getId(), colisao, sonda.getPosicao().getX(), sonda.getPosicao().getY(), instrucao);
 
 					erros.add(mensagem);
 				}
+				indiceInstrucao++;
 			} catch (PosicaoExploracaoInvalidoException posExc) {
-				String mensagem = String.format("A Sonda [%s] sairá da área de exploração [x: %s,y: %s] ao executar a instrução: %s", novoEstado.getId(), novoEstado.getPosicao().getX(), novoEstado.getPosicao().getY(), instrucao);
+				String mensagem = String.format("A Sonda [%s] sairá da área de exploração [x: %s,y: %s] ao executar a instrução: %s", sonda.getId(), sonda.getPosicao().getX(), sonda.getPosicao().getY(), instrucao);
 
 				erros.add(mensagem);
 			}
-		});
+		}
 
 		if(!erros.isEmpty()) {
 			throw new ColisaoException(erros);

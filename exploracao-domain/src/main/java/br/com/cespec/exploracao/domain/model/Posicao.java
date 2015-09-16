@@ -1,37 +1,22 @@
 package br.com.cespec.exploracao.domain.model;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.validation.constraints.Min;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Posicao {
 
 	@Min(value=0)
+	@Getter
 	private int x;
 
 	@Min(value=0)
+	@Getter
 	private int y;
-
-	private Map<Direcao, Movimentacao> regraMovimentacao = new HashMap<>();
-
-	public Posicao(int x, int y) {
-		this.x = x;
-		this.y = y;
-
-		regraMovimentacao.put(Direcao.N, () ->  this.y++);
-		regraMovimentacao.put(Direcao.E, () ->  this.x++);
-		regraMovimentacao.put(Direcao.S, () ->  this.y--);
-		regraMovimentacao.put(Direcao.W, () ->  this.x--);
-	}
-
-	public void mover(Direcao direcao) {
-
-		Movimentacao mov = regraMovimentacao.get(direcao);
-
-		mov.movimentar();
-	}
 }

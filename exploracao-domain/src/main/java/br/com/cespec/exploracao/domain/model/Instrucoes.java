@@ -81,7 +81,7 @@ public enum Instrucoes {
 		return equals;
 	}
 
-	public static String destacadarInstrucao(String instrucoes, int indiceInstrucao) {
+	public static String destacarInstrucao(String instrucoes, int indiceInstrucao) {
 
 		char instrucao = instrucoes.charAt(indiceInstrucao);
 

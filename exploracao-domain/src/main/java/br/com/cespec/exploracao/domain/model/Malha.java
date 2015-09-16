@@ -16,7 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
-import br.com.cespec.exploracao.domain.repository.SondaRepository;
+import br.com.cespec.exploracao.domain.repository.Sondas;
 import br.com.cespec.exploracao.infra.exception.PontoExploracaoOcupadoException;
 import br.com.cespec.exploracao.infra.exception.PosicaoExploracaoInvalidoException;
 
@@ -31,7 +31,7 @@ public class Malha {
 	private Map<Integer, List<PontoExploracao>> area;
 
 	@Autowired
-	private SondaRepository sondaRepository;
+	private Sondas sondaRepository;
 
 	public boolean areaDeExploracaoIniciada()  {
 		return area != null;

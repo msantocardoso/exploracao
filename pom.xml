@@ -25,6 +25,7 @@
 		<java-version>1.8</java-version>
 		<lombok.version>1.16.4</lombok.version>
 		<validation-api>1.1.0.Final</validation-api>
+		<commons-lang>3.4</commons-lang>
 	</properties>
 
 	<build>
@@ -57,6 +58,11 @@
 				<artifactId>lombok</artifactId>
 				<version>${lombok.version}</version>
 				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-lang3</artifactId>
+				<version>${commons-lang}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

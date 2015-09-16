@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import br.com.cespec.exploracao.domain.model.Direcao;
 import br.com.cespec.exploracao.domain.model.Planalto;
 import br.com.cespec.exploracao.domain.model.Sonda;
-import br.com.cespec.exploracao.domain.repository.SondaRepository;
+import br.com.cespec.exploracao.domain.repository.Sondas;
 import br.com.cespec.exploracao.domain.transfer.InstrucaoDTO;
 import br.com.cespec.exploracao.domain.transfer.PosicaoDTO;
 import br.com.cespec.exploracao.domain.transfer.SondaDTO;
@@ -34,7 +34,7 @@ public class SondaRest {
 	Planalto planalto;
 
 	@Autowired
-	SondaRepository sondaRepository;
+	Sondas sondaRepository;
 
 	@ResponseBody
 	@ResponseStatus(HttpStatus.OK)
@@ -78,7 +78,7 @@ public class SondaRest {
 	@RequestMapping(value="/sondas/{id}", produces="application/json", method=RequestMethod.GET)
 	public SondaDTO consultarSonda(@PathVariable("id") @NotNull Long id) {
 
-		Sonda sonda = sondaRepository.buscarSonda(id);
+		Sonda sonda = sondaRepository.buscar(id);
 
 		SondaDTO sondaTransfer = null;
 

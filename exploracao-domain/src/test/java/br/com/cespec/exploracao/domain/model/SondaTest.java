@@ -5,13 +5,22 @@ import static org.junit.Assert.assertEquals;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import br.com.cespec.exploracao.domain.AbstracaoSpringTest;
+import br.com.cespec.exploracao.domain.RegrasMovimentacao;
+import br.com.cespec.exploracao.domain.RegrasRotacao;
 import br.com.cespec.exploracao.infra.exception.InstrucaoInvalidaException;
 
 public class SondaTest extends AbstracaoSpringTest {
 
 	Sonda sonda;
+
+	@Autowired
+	RegrasRotacao rotacao;
+
+	@Autowired
+	RegrasMovimentacao movimentacao;
 
 	@Before
 	public void setUp() {
@@ -26,7 +35,7 @@ public class SondaTest extends AbstracaoSpringTest {
 	@Test
 	public void deveMovimentarSondaConformeInstrucaoDeMovimentacao() {
 
-		sonda.executar("M");
+		sonda.executar("M", movimentacao, rotacao);
 
 		Posicao posicao = sonda.getPosicao();
 
@@ -41,7 +50,7 @@ public class SondaTest extends AbstracaoSpringTest {
 	@Test
 	public void deveVirarSondaParaEsquerda() {
 
-		sonda.executar("L");
+		sonda.executar("L", movimentacao, rotacao);
 
 		Posicao posicao = sonda.getPosicao();
 
@@ -56,7 +65,7 @@ public class SondaTest extends AbstracaoSpringTest {
 	@Test
 	public void deveVirarSondaParaDireita() {
 
-		sonda.executar("R");
+		sonda.executar("R", movimentacao, rotacao);
 
 		Posicao posicao = sonda.getPosicao();
 
@@ -73,7 +82,7 @@ public class SondaTest extends AbstracaoSpringTest {
 
 		Sonda sd = this.novaSonda(1, 2, Direcao.N);
 
-		sd.executar("LMLMLMLMM");
+		sd.executar("LMLMLMLMM", movimentacao, rotacao);
 
 		Posicao posicao = sd.getPosicao();
 
@@ -90,7 +99,7 @@ public class SondaTest extends AbstracaoSpringTest {
 
 		Sonda sd = new Sonda(3, 3, Direcao.E);
 
-		sd.executar("MMRMMRMRRM");
+		sd.executar("MMRMMRMRRM", movimentacao, rotacao);
 
 		Posicao posicao = sd.getPosicao();
 
@@ -104,16 +113,16 @@ public class SondaTest extends AbstracaoSpringTest {
 
 	@Test(expected = InstrucaoInvalidaException.class)
 	public void deveLancarExceptionAoPassarUmaInstrucaoNulaParaSonda() {
-		sonda.executar(null);
+		sonda.executar(null, movimentacao, rotacao);
 	}
 
 	@Test(expected = InstrucaoInvalidaException.class)
 	public void deveLancarExceptionAoPassarUmaInstrucaoVaziaParaSonda() {
-		sonda.executar("");
+		sonda.executar("", movimentacao, rotacao);
 	}
 
 	@Test(expected = InstrucaoInvalidaException.class)
 	public void deveLancarExceptionAoPassarUmaInstrucaoInvalidaParaSonda() {
-		sonda.executar("A");
+		sonda.executar("A", movimentacao, rotacao);
 	}
 }

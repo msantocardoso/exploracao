@@ -6,19 +6,19 @@ import br.com.cespec.exploracao.domain.model.Direcao;
 import br.com.cespec.exploracao.domain.model.Posicao;
 import br.com.cespec.exploracao.domain.model.Sonda;
 
-public interface SondaRepository {
+public interface Sondas {
 
-	void adicionarSonda(Sonda sonda);
+	void adicionar(Sonda sonda);
 
-	Sonda adicionarSonda(int x, int y, Direcao direcao);
+	Sonda adicionar(int x, int y, Direcao direcao);
 
-	Sonda removerSonda(Long id);
+	Sonda remover(Long id);
 
-	void removerSonda(Sonda sonda);
+	void remover(Sonda sonda);
 
 	void removerTodasAsSondas();
 
-	Sonda buscarSonda(Long id);
+	Sonda buscar(Long id);
 
 	List<Sonda> buscarTodas();
 
