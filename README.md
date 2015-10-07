@@ -8,10 +8,10 @@ br.com.cespec.exploracao.application.ExploracaoApplication
 
 API do Serviço de Exploração
 ----------------------------------------
-http://localhost:8080/exploracao/iniciar/area
+https://exploracao.herokuapp.com/exploracao/iniciar/area
 
 > * Serviço de inicialização da área de exploração.
-	- POST: http://localhost:8080/exploracao/iniciar/area
+	- POST: https://exploracao.herokuapp.com/exploracao/iniciar/area
 ```
 {
 "x": 5,
@@ -19,16 +19,16 @@ http://localhost:8080/exploracao/iniciar/area
 }
 ```
 > * Exibir Área de Exploraçãoa
-	- GET: http://localhost:8080/exploracao/exibir/area
+	- GET: https://exploracao.herokuapp.com/exploracao/exibir/area
 
 > * Consultar Sonda Por ID
-	- GET: http://localhost:8080/exploracao/sondas/{id}
+	- GET: https://exploracao.herokuapp.com/exploracao/sondas/{id}
 
 > * Lista Sondas
-	- GET: http://localhost:8080/exploracao/sondas
+	- GET: https://exploracao.herokuapp.com/exploracao/sondas
 
 > * Cadastrar Sonda
-	- POST: http://localhost:8080/exploracao/sondas
+	- POST: https://exploracao.herokuapp.com/exploracao/sondas
 ```
 {
 "posicao":{"x": 0,"y": 1},
@@ -37,13 +37,13 @@ http://localhost:8080/exploracao/iniciar/area
 ```
 
 > * Remover Sonda
-	- DELETE: http://localhost:8080/exploracao/sondas/{id}
+	- DELETE: https://exploracao.herokuapp.com/exploracao/sondas/{id}
 
 > * Executar Instrução Individual
-	- PUT: http://localhost:8080/exploracao/sondas/{id}/executar/instrucoes/{instrucoes} -> "LMLMLMLMM"
+	- PUT: https://exploracao.herokuapp.com/exploracao/sondas/{id}/executar/instrucoes/{instrucoes} -> "LMLMLMLMM"
 
 > * Executar Instruções
-	- PUT: http://localhost:8080/exploracao/sondas/executar/instrucoes
+	- PUT: https://exploracao.herokuapp.com/exploracao/sondas/executar/instrucoes
 ```
 [
 {"sondaId": 1, "instrucoes": "LMLMLMLMM"},
