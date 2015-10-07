@@ -71,7 +71,7 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
-					<mainClass>br.com.cespec.ExploracaoApplication</mainClass>
+					<mainClass>br.com.cespec.exploracao.application.ExploracaoApplication</mainClass>
 				</configuration>
 				<executions>
 					<execution>
