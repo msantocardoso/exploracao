@@ -2,6 +2,8 @@ package br.com.cespec.exploracao.domain.repository;
 
 import java.util.List;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 import br.com.cespec.exploracao.domain.model.Direcao;
 import br.com.cespec.exploracao.domain.model.Posicao;
 import br.com.cespec.exploracao.domain.model.Sonda;
@@ -20,6 +22,7 @@ public interface Sondas {
 
 	Sonda buscar(Long id);
 
+	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
 	List<Sonda> buscarTodas();
 
 	Posicao buscarUltimaPosicao(Long id);

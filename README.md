@@ -18,14 +18,13 @@ https://exploracao.herokuapp.com/exploracao/iniciar/area
 "y": 5
 }
 ```
-> * Exibir Área de Exploraçãoa
+
+curl -X POST -u 'msantocardoso|admin:123' -H 'Content-Type: application/json' -d '{"x": 5,"y": 5}' https://exploracao.herokuapp.com/exploracao/iniciar/area
+
+> * Exibir Área de Exploração
 	- GET: https://exploracao.herokuapp.com/exploracao/exibir/area
 
-> * Consultar Sonda Por ID
-	- GET: https://exploracao.herokuapp.com/exploracao/sondas/{id}
-
-> * Lista Sondas
-	- GET: https://exploracao.herokuapp.com/exploracao/sondas
+curl -i -u 'msantocardoso|admin:123' https://exploracao.herokuapp.com/exploracao/exibir/area
 
 > * Cadastrar Sonda
 	- POST: https://exploracao.herokuapp.com/exploracao/sondas
@@ -36,11 +35,38 @@ https://exploracao.herokuapp.com/exploracao/iniciar/area
 }
 ```
 
+curl -X POST -u 'msantocardoso|admin:123' -H 'Content-Type: application/json' -d '{"posicao":{"x": 0,"y": 1},"direcao": "E"}' http://localhost:8080/exploracao/sondas
+
+curl -X POST -u 'msantocardoso|admin:123' -H 'Content-Type: application/json' -d '{"posicao":{"x": 0,"y": 1},"direcao": "E"}' https://exploracao.herokuapp.com/exploracao/sondas
+
+> * Lista Sondas
+	- GET: https://exploracao.herokuapp.com/exploracao/sondas
+
+curl -i -u 'msantocardoso|admin:123' http://localhost:8080/exploracao/sondas
+
+curl -i -u 'msantocardoso|admin:123' https://exploracao.herokuapp.com/exploracao/sondas
+
+> * Consultar Sonda Por ID
+	- GET: https://exploracao.herokuapp.com/exploracao/sondas/{id}
+
+curl -i -u 'msantocardoso|admin:123' http://localhost:8080/exploracao/sondas/{id}
+
+curl -i -u 'msantocardoso|admin:123' https://exploracao.herokuapp.com/exploracao/sondas/{id}
+
+
 > * Remover Sonda
 	- DELETE: https://exploracao.herokuapp.com/exploracao/sondas/{id}
 
+curl -X DELETE -u 'msantocardoso|admin:123' http://localhost:8080/exploracao/sondas/{id}
+
+curl -X DELETE -u 'msantocardoso|admin:123' https://exploracao.herokuapp.com/exploracao/sondas/{id}
+
 > * Executar Instrução Individual
-	- PUT: https://exploracao.herokuapp.com/exploracao/sondas/{id}/executar/instrucoes/{instrucoes} -> "LMLMLMLMM"
+	- PUT: https://exploracao.herokuapp.com/exploracao/sondas/{id}/executar/instrucoes/{instrucoes} -> "LMLMLMLM"
+
+curl -X PUT -u 'msantocardoso|admin:123' http://localhost:8080/exploracao/sondas/{id}/executar/instrucoes/{instrucoes} -> "LMLMLMLM"
+
+curl -X PUT -u 'msantocardoso|admin:123' https://exploracao.herokuapp.com/exploracao/sondas/{id}/executar/instrucoes/{instrucoes} -> "LMLMLMLM"
 
 > * Executar Instruções
 	- PUT: https://exploracao.herokuapp.com/exploracao/sondas/executar/instrucoes
@@ -50,3 +76,8 @@ https://exploracao.herokuapp.com/exploracao/iniciar/area
 {"sondaId": 2, "instrucoes": "MMRMMRMRRM"}
 ]
 ```
+
+curl -X PUT -u 'msantocardoso|admin:123' -d '[{"sondaId": 1, "instrucoes": "LMLMLMLMM"},{"sondaId": 2, "instrucoes": "MMRMMRMRRM"}]' http://localhost:8080/exploracao/sondas/executar/instrucoes
+
+curl -X PUT -u 'msantocardoso|admin:123' -d '[{"sondaId": 1, "instrucoes": "LMLMLMLMM"}, {"sondaId": 2, "instrucoes": "MMRMMRMRRM"}]' https://exploracao.herokuapp.com/exploracao/sondas/executar/instrucoes
+

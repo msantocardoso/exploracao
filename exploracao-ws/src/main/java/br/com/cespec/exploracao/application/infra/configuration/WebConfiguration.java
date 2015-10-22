@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.validation.beanvalidation.MethodValidationPostProcessor;
@@ -16,8 +17,11 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
+import br.com.cespec.exploracao.application.infra.configuration.security.SecurityConfiguration;
+
 @Configuration
 @EnableWebMvc
+@Import({ SecurityConfiguration.class })
 @ComponentScan(basePackages = {"br.com.cespec"})
 public class WebConfiguration extends WebMvcConfigurationSupport {
 

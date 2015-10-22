@@ -9,6 +9,7 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
@@ -38,6 +39,7 @@ public class Planalto {
 	@Autowired
 	private RegrasRotacao regrasRotacao;
 
+	@PreAuthorize("hasAnyRole('ROLE_ADMIN')")
 	public void inicializar(@Min(value=0,message="{coordenada.negativa}") int x, @Min(value=0,message="{coordenada.negativa}") int y) {
 		this.malha.iniciar(x, y);
 	}
@@ -48,6 +50,7 @@ public class Planalto {
 		}
 	}
 
+	@PreAuthorize("hasAnyRole('ROLE_ADMIN')")
 	public void adicionarSonda(@NotNull(message="{sonda.notnull}") @Valid Sonda sonda) {
 
 		validarAreaExploracao();
@@ -63,6 +66,7 @@ public class Planalto {
 		this.malha.addSonda(sonda);
 	}
 
+	@PreAuthorize("hasAnyRole('ROLE_ADMIN')")
 	public Sonda adicionarSonda(@Min(value=0,message="{coordenada.negativa}") int x, @Min(value=0,message="{coordenada.negativa}") int y, @NotNull(message="{direcao.notnull}") Direcao direcao) {
 
 		validarAreaExploracao();
@@ -74,6 +78,7 @@ public class Planalto {
 		return sonda;
 	}
 
+	@PreAuthorize("hasAnyRole('ROLE_ADMIN')")
 	public void removerSonda(@Min(value=1,message="{sonda.id.invalido}") long id) {
 		validarAreaExploracao();
 
@@ -92,6 +97,7 @@ public class Planalto {
 		}
 	}
 
+	@PreAuthorize("hasAnyRole('ROLE_ADMIN')")
 	public void removerSonda(@NotNull(message="{sonda.notnull}") @Valid Sonda sonda) {
 		removerSonda(sonda.getId());
 	}
@@ -102,6 +108,7 @@ public class Planalto {
 		return malha.getAreaExploracao();
 	}
 
+	@PreAuthorize("hasAnyRole('ROLE_ADMIN')")
 	public Sonda executarInstrucoes(@Min(value=1,message="{sonda.id.invalido}") Long id, @NotEmpty String instrucoes) {
 		validarAreaExploracao();
 
@@ -158,6 +165,7 @@ public class Planalto {
 		}
 	}
 
+	@PreAuthorize("hasAnyRole('ROLE_ADMIN')")
 	public List<Sonda> executarInstrucoes(List<InstrucaoDTO> instrucoes) {
 
 		validarAreaExploracao();
