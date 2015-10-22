@@ -30,14 +30,14 @@ curl -i -u 'admin:123' https://exploracao.herokuapp.com/exploracao/exibir/area
 	- POST: https://exploracao.herokuapp.com/exploracao/sondas
 ```
 {
-"posicao":{"x": 0,"y": 1},
-"direcao": "E"
+"posicao":{"x": 1,"y": 2},
+"direcao": "N"
 }
 ```
 
 curl -X POST -u 'admin:123' -H 'Content-Type: application/json' -d '{"posicao":{"x": 0,"y": 1},"direcao": "E"}' http://localhost:8080/exploracao/sondas
 
-curl -X POST -u 'admin:123' -H 'Content-Type: application/json' -d '{"posicao":{"x": 0,"y": 1},"direcao": "E"}' https://exploracao.herokuapp.com/exploracao/sondas
+curl -X POST -u 'admin:123' -H 'Content-Type: application/json' -d '{"posicao":{"x": 1,"y": 2},"direcao": "N"}' https://exploracao.herokuapp.com/exploracao/sondas
 
 > * Lista Sondas
 	- GET: https://exploracao.herokuapp.com/exploracao/sondas
@@ -66,7 +66,7 @@ curl -X DELETE -u 'admin:123' https://exploracao.herokuapp.com/exploracao/sondas
 
 curl -X PUT -u 'admin:123' http://localhost:8080/exploracao/sondas/{id}/executar/instrucoes/{instrucoes} -> "LMLMLMLM"
 
-curl -X PUT -u 'admin:123' https://exploracao.herokuapp.com/exploracao/sondas/{id}/executar/instrucoes/{instrucoes} -> "LMLMLMLM"
+curl -X PUT -u 'admin:123' https://exploracao.herokuapp.com/exploracao/sondas/{id}/executar/instrucoes/{instrucoes} -> "LMLMLMLMM"
 
 > * Executar Instruções
 	- PUT: https://exploracao.herokuapp.com/exploracao/sondas/executar/instrucoes
@@ -81,3 +81,12 @@ curl -X PUT -u 'admin:123' -d '[{"sondaId": 1, "instrucoes": "LMLMLMLMM"},{"sond
 
 curl -X PUT -u 'admin:123' -d '[{"sondaId": 1, "instrucoes": "LMLMLMLMM"}, {"sondaId": 2, "instrucoes": "MMRMMRMRRM"}]' https://exploracao.herokuapp.com/exploracao/sondas/executar/instrucoes
 
+
+LINKS:
+===
+
+http://www.baeldung.com/2011/11/20/basic-and-digest-authentication-for-a-restful-service-with-spring-security-3-1/
+
+https://dzone.com/articles/basic-and-digest
+
+http://cadocruz.com.br/seguran%C3%A7a/2015/02/28/seguranca-autenticacao-digest-spring-security-servicos-restful.html
